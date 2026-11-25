@@ -3425,6 +3425,14 @@ pub fn route_arrows_from_text(text: &str) -> (bool, bool) {
     (dynamic.unwrap_or(legacy), map.unwrap_or(legacy))
 }
 
+fn ai_pedestrian_awareness_word(value: &str) -> &'static str {
+    match value.trim() {
+        "crossings" => "crossings",
+        "ignore" => "ignore",
+        _ => "full",
+    }
+}
+
 /// The page's view of a `settings.cfg` text (None: no file yet, the game's defaults).
 pub fn settings_from_text(text: Option<&str>) -> Value {
     settings_from_text_on(text, cfg!(any(target_os = "android", target_os = "ios")))
@@ -3578,6 +3586,7 @@ pub fn settings_from_text_on(text: Option<&str>, phone: bool) -> Value {
     // an early timetable bus waits only at the stops the timetable times (off: at every
     // stop, as in OMSI; #1773)
     v["ai_wait_timed_stops_only"] = json!(false);
+    v["ai_pedestrian_awareness"] = json!("full");
     v["pax_bad_driving"] = json!(true);
     v["pax_late_tolerance_min"] = json!(5.0);
     v["pax_free_drive"] = json!("auto");
@@ -3956,6 +3965,7 @@ pub fn settings_from_text_on(text: Option<&str>, phone: bool) -> Value {
             "ai_max_parked" => {
                 v[&k] = json!(val.parse::<f64>().map(|x| x.max(-1.0) as i64).unwrap_or(0))
             }
+            "ai_pedestrian_awareness" => v[&k] = json!(ai_pedestrian_awareness_word(val)),
             "ai_max_humans" => {
                 v[&k] = json!(val.parse::<f64>().map(|x| x.max(1.0) as i64).unwrap_or(200))
             }
@@ -5207,8 +5217,13 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
         f("radio_dropouts", 0.0).clamp(0.0, 1.0)
     ));
     text.push_str(&format!(
-        "ai_wait_timed_stops_only={}\n",
-        b("ai_wait_timed_stops_only", false)
+        "ai_wait_timed_stops_only={}\nai_pedestrian_awareness={}\n",
+        b("ai_wait_timed_stops_only", false),
+        ai_pedestrian_awareness_word(
+            v.get("ai_pedestrian_awareness")
+                .and_then(|x| x.as_str())
+                .unwrap_or("full")
+        )
     ));
     text.push_str(&format!(
         "trip_summary={}\nfull_tank={}\n",

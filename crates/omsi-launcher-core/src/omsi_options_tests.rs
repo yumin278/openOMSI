@@ -34,3 +34,31 @@ fn the_real_time_reflections_are_read_as_omsi_writes_them() {
     }
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn ai_pedestrian_awareness_survives_settings_saves() {
+    use super::{settings_from_text_on, settings_to_text};
+    use serde_json::json;
+
+    let key = "ai_pedestrian_awareness";
+    for phone in [false, true] {
+        assert_eq!(settings_from_text_on(None, phone)[key], "full");
+        let old = format!("{key}=full\n{key}=ignore\n");
+        for mode in ["full", "crossings", "ignore"] {
+            let mut settings = settings_from_text_on(Some(&old), phone);
+            settings[key] = json!(mode);
+            let text = settings_to_text(&settings, Some(&old));
+            assert_eq!(
+                text.lines()
+                    .filter(|line| line.starts_with(&format!("{key}=")))
+                    .count(),
+                1
+            );
+            assert_eq!(settings_from_text_on(Some(&text), phone)[key], mode);
+        }
+        assert_eq!(
+            settings_from_text_on(Some("ai_pedestrian_awareness=invalid\n"), phone)[key],
+            "full"
+        );
+    }
+}

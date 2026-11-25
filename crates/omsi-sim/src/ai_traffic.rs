@@ -116,11 +116,19 @@ pub enum PedestrianAwareness {
 }
 
 impl PedestrianAwareness {
-    fn from_value(value: Option<&str>) -> Self {
+    pub fn from_value(value: Option<&str>) -> Self {
         match value.map(str::trim) {
             Some("crossings") => Self::CrossingsOnly,
             Some("ignore") => Self::Ignore,
             _ => Self::Full,
+        }
+    }
+
+    /// An explicit process override takes precedence over the saved setting.
+    pub fn with_env_override(self) -> Self {
+        match omsi_cfg::flags::OMSI_AI_PEDESTRIAN_AWARENESS.var() {
+            Some(value) => Self::from_value(Some(value)),
+            None => self,
         }
     }
 }
