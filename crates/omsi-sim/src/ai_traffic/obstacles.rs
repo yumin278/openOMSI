@@ -61,7 +61,7 @@ impl TrafficSim {
     /// timetable bus ignores the people waiting at the kerb for it unless they stand well
     /// inside its path (it pulls up right beside them).
     pub fn people_stop(&self, i: usize, way: &[(usize, f32)]) -> Option<(f32, DVec2)> {
-        if self.people.is_empty() {
+        if self.pedestrian_awareness != PedestrianAwareness::Full || self.people.is_empty() {
             return None;
         }
         let car = &self.cars[i];
@@ -491,11 +491,15 @@ impl TrafficSim {
             .map(|b| Footprint::from_obb(usize::MAX, b, 0.0))
             .filter(|f| !start.overlaps(f, 0.0))
             .collect();
-        let people: Vec<&(DVec3, DVec2, bool)> = self
-            .people
-            .iter()
-            .filter(|(p, _, _)| (p.truncate() - pos).length() < reach + 3.0)
-            .collect();
+        let people: Vec<&(DVec3, DVec2, bool)> =
+            if self.pedestrian_awareness == PedestrianAwareness::Full {
+                self.people
+                    .iter()
+                    .filter(|(p, _, _)| (p.truncate() - pos).length() < reach + 3.0)
+                    .collect()
+            } else {
+                Vec::new()
+            };
         let v = st.speed.max(3.0);
         let mut d = 0.0f32;
         let mut k = 0usize;

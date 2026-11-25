@@ -105,6 +105,26 @@ fn spread_schemes(n: usize, h: u64) -> Vec<usize> {
         .collect()
 }
 
+/// Whether AI vehicles treat pedestrians as obstacles. This never changes the people
+/// themselves, passenger service or pedestrian traffic-light requests.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PedestrianAwareness {
+    #[default]
+    Full,
+    CrossingsOnly,
+    Ignore,
+}
+
+impl PedestrianAwareness {
+    fn from_value(value: Option<&str>) -> Self {
+        match value.map(str::trim) {
+            Some("crossings") => Self::CrossingsOnly,
+            Some("ignore") => Self::Ignore,
+            _ => Self::Full,
+        }
+    }
+}
+
 pub struct TrafficSim {
     pub net: Network,
     /// Sum of the spawn weights of every street lane, updated only as tiles add lanes.
@@ -231,6 +251,8 @@ pub struct TrafficSim {
     /// at a stop (set every frame) - the cars stop for anybody in their way, not only on
     /// a crossing.
     pub people: Vec<(DVec3, DVec2, bool)>,
+    /// Which pedestrian obstacle checks AI vehicles perform.
+    pub pedestrian_awareness: PedestrianAwareness,
     /// No car has been placed yet: the first population may fill the view.
     pub initial: bool,
     /// Seconds of the last tick (the lamp scripts run in `sync`).

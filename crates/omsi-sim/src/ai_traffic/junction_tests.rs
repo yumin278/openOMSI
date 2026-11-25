@@ -1127,6 +1127,7 @@ fn somebody_on_the_crossing_holds_the_car() {
         t.net.walks[4].iter().any(|w| w.0 == walk),
         "the footpath crosses the path"
     );
+    t.pedestrian_awareness = PedestrianAwareness::Full;
     t.walkers = vec![(walk, 11.75)];
     let me = car(&mut t, &f, 0, 100.0, 0xd1, 8.0);
     ticks(&mut t, 15.0);
@@ -1138,8 +1139,12 @@ fn somebody_on_the_crossing_holds_the_car() {
         c.state.lane,
         c.state.s
     );
-    t.walkers.clear();
+    t.pedestrian_awareness = PedestrianAwareness::CrossingsOnly;
+    ticks(&mut t, 2.0);
+    assert!(get(&t, me).state.speed < 0.1);
+    t.pedestrian_awareness = PedestrianAwareness::Ignore;
     ticks(&mut t, 10.0);
+    assert_eq!(t.walkers, vec![(walk, 11.75)]);
     assert!(
         t.cars
             .iter()

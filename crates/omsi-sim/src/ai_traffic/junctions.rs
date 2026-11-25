@@ -1145,6 +1145,9 @@ impl TrafficSim {
         why: Option<&mut Vec<String>>,
         stop_at: &mut Option<f32>,
     ) -> bool {
+        if self.pedestrian_awareness == PedestrianAwareness::Ignore {
+            return false;
+        }
         let mut found = false;
         let mut why = why;
         for &(w, at, w_at) in &self.net.walks[l] {
