@@ -105,6 +105,18 @@ fn spread_schemes(n: usize, h: u64) -> Vec<usize> {
         .collect()
 }
 
+/// Local fork policy for AI pedestrian obstacles only. Change this constant to select
+/// Full (upstream behaviour), CrossingsOnly, or Ignore; no front-end settings are involved.
+const AI_PEDESTRIAN_AWARENESS: PedestrianAwareness = PedestrianAwareness::Ignore;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)] // The other modes remain available for local builds and regression tests.
+enum PedestrianAwareness {
+    Full,
+    CrossingsOnly,
+    Ignore,
+}
+
 pub struct TrafficSim {
     pub net: Network,
     /// Sum of the spawn weights of every street lane, updated only as tiles add lanes.
@@ -231,6 +243,7 @@ pub struct TrafficSim {
     /// at a stop (set every frame) - the cars stop for anybody in their way, not only on
     /// a crossing.
     pub people: Vec<(DVec3, DVec2, bool)>,
+    pedestrian_awareness: PedestrianAwareness,
     /// No car has been placed yet: the first population may fill the view.
     pub initial: bool,
     /// Seconds of the last tick (the lamp scripts run in `sync`).

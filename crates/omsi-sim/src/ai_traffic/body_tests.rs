@@ -92,6 +92,39 @@ pub(super) fn car(t: &TrafficSim, id: u64) -> &AiCar {
 }
 
 #[test]
+fn pedestrian_awareness_modes_gate_only_pedestrian_obstacles() {
+    let f = Fixture::new();
+    let lane = LaneBuilder::arc(DVec3::ZERO, 0.0, 1000.0, 0.0, 0.0, LaneKind::Street, 3.0);
+    let mut t = traffic(
+        &f,
+        Network {
+            lanes: vec![lane],
+            ..Default::default()
+        },
+    );
+    assert_eq!(t.pedestrian_awareness, AI_PEDESTRIAN_AWARENESS);
+    add_car(&mut t, &f, 0, 10.0, 42, Some(8.0));
+    let s = t.cars[0].state.s;
+    let front = t.cars[0].state.front;
+    let person = t.net.lanes[0].at(s + front + 4.0).0;
+    t.people.push((person, DVec2::ZERO, false));
+    let feet = super::foot_grid::Feet::new(Vec::new());
+    for mode in [
+        PedestrianAwareness::Full,
+        PedestrianAwareness::CrossingsOnly,
+        PedestrianAwareness::Ignore,
+    ] {
+        t.pedestrian_awareness = mode;
+        let detects = mode == PedestrianAwareness::Full;
+        assert_eq!(t.people_stop(0, &[(0, -s)]).is_some(), detects);
+        let way = |d: f32| t.net.lanes[0].at(s + d).0;
+        let blocked = t.ghost_blocked(0, &way, 20.0, &feet, &[], &[]);
+        assert_eq!(blocked.is_some(), detects);
+        assert_eq!(t.people, vec![(person, DVec2::ZERO, false)]);
+    }
+}
+
+#[test]
 fn traffic_pedals_drive_script_engine_load_and_braking() {
     let mut f = Fixture::new();
     let scripted = crate::timetable_run::tests::script_test_vehicle(
