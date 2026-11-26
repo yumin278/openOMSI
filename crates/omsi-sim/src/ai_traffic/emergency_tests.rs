@@ -539,6 +539,7 @@ fn it_never_crosses_an_occupied_pedestrian_crossing() {
     let walk = net.lanes.len() - 1;
     net.link(1.5);
     let mut t = sim(&f, net, 2);
+    t.pedestrian_awareness = PedestrianAwareness::Full;
     show(&mut t, 0, 0);
     assert!(
         t.net.walks[4].iter().any(|w| w.0 == walk),

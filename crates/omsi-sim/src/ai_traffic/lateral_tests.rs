@@ -674,6 +674,7 @@ fn an_island_beginning_after_the_pull_out_forbids_the_pass() {
 fn somebody_on_the_other_half_of_the_road_forbids_the_pass() {
     let f = Fixture::new();
     let (mut t, me) = parked_scene(&f, two_way(3.5, None));
+    t.pedestrian_awareness = PedestrianAwareness::Full;
     t.people = vec![(DVec3::new(-3.5, 106.0, 0.0), DVec2::ZERO, false)];
     for _ in 0..(30.0 / DT) as usize {
         t.tick(DT, None);
