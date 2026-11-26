@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
       - name: Stamp test version (disable upstream auto-updates)
         shell: bash
-        run: echo "OPENOMSI_VERSION=$(sh scripts/version.sh)-pr0-ai-pedestrians" >> "$GITHUB_ENV"
+        run: echo "OPENOMSI_VERSION=$(sh scripts/version.sh)-pr0-ai-pedestrians-local" >> "$GITHUB_ENV"
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ env.TARGET }}
