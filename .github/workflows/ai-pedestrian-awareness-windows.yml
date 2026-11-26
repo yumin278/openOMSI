@@ -46,8 +46,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --locked --release --target $env:TARGET -p omsi-sim --lib somebody_on_the_crossing_holds_the_car
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --locked --release --target $env:TARGET -p omsi-launcher-core --lib ai_pedestrian_awareness_survives_settings_saves
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build
         shell: cmd
         run: scripts\build-windows.cmd %TARGET%

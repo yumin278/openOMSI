@@ -194,7 +194,6 @@ impl Traffic {
         let settings = crate::settings::Settings::load();
         sim.timed_waits_only = settings.ai_wait_timed_stops_only;
         sim.reaction_factor = settings.ai_reaction;
-        sim.pedestrian_awareness = settings.ai_pedestrian_awareness.with_env_override();
         Ok(Traffic::with_sim(sim, root))
     }
 

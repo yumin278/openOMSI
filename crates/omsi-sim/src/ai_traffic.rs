@@ -105,32 +105,16 @@ fn spread_schemes(n: usize, h: u64) -> Vec<usize> {
         .collect()
 }
 
-/// Whether AI vehicles treat pedestrians as obstacles. This never changes the people
-/// themselves, passenger service or pedestrian traffic-light requests.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum PedestrianAwareness {
-    #[default]
+/// Local fork policy for AI pedestrian obstacles only. Change this constant to select
+/// Full (upstream behaviour), CrossingsOnly, or Ignore; no front-end settings are involved.
+const AI_PEDESTRIAN_AWARENESS: PedestrianAwareness = PedestrianAwareness::Ignore;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)] // The other modes remain available for local builds and regression tests.
+enum PedestrianAwareness {
     Full,
     CrossingsOnly,
     Ignore,
-}
-
-impl PedestrianAwareness {
-    pub fn from_value(value: Option<&str>) -> Self {
-        match value.map(str::trim) {
-            Some("crossings") => Self::CrossingsOnly,
-            Some("ignore") => Self::Ignore,
-            _ => Self::Full,
-        }
-    }
-
-    /// An explicit process override takes precedence over the saved setting.
-    pub fn with_env_override(self) -> Self {
-        match omsi_cfg::flags::OMSI_AI_PEDESTRIAN_AWARENESS.var() {
-            Some(value) => Self::from_value(Some(value)),
-            None => self,
-        }
-    }
 }
 
 pub struct TrafficSim {
@@ -259,8 +243,7 @@ pub struct TrafficSim {
     /// at a stop (set every frame) - the cars stop for anybody in their way, not only on
     /// a crossing.
     pub people: Vec<(DVec3, DVec2, bool)>,
-    /// Which pedestrian obstacle checks AI vehicles perform.
-    pub pedestrian_awareness: PedestrianAwareness,
+    pedestrian_awareness: PedestrianAwareness,
     /// No car has been placed yet: the first population may fill the view.
     pub initial: bool,
     /// Seconds of the last tick (the lamp scripts run in `sync`).

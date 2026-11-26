@@ -165,9 +165,7 @@ impl TrafficSim {
             occluders: None,
             walkers: Vec::new(),
             people: Vec::new(),
-            pedestrian_awareness: PedestrianAwareness::from_value(
-                omsi_cfg::flags::OMSI_AI_PEDESTRIAN_AWARENESS.var(),
-            ),
+            pedestrian_awareness: AI_PEDESTRIAN_AWARENESS,
             initial: true,
             last_dt: 0.0,
             lamp_dt: 0.0,

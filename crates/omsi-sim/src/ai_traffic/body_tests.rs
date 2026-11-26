@@ -21,7 +21,7 @@ impl Fixture {
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));
         std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(dir.join("car.bus"), "[model]\nmodel.cfg\n").unwrap();
+        std::fs::write(dir.join("car.bus"), "[model]\nmodel.cfg\n[mass]\n7\n").unwrap();
         std::fs::write(dir.join("model.cfg"), "").unwrap();
         let ty = Arc::new(VehicleType::load_ai(&dir, &dir.join("car.bus")).unwrap());
         Fixture { dir, ty }
@@ -102,6 +102,7 @@ fn pedestrian_awareness_modes_gate_only_pedestrian_obstacles() {
             ..Default::default()
         },
     );
+    assert_eq!(t.pedestrian_awareness, AI_PEDESTRIAN_AWARENESS);
     add_car(&mut t, &f, 0, 10.0, 42, Some(8.0));
     let s = t.cars[0].state.s;
     let front = t.cars[0].state.front;
@@ -121,26 +122,6 @@ fn pedestrian_awareness_modes_gate_only_pedestrian_obstacles() {
         assert_eq!(blocked.is_some(), detects);
         assert_eq!(t.people, vec![(person, DVec2::ZERO, false)]);
     }
-}
-
-#[test]
-fn pedestrian_awareness_defaults_to_full() {
-    assert_eq!(
-        PedestrianAwareness::from_value(None),
-        PedestrianAwareness::Full
-    );
-    assert_eq!(
-        PedestrianAwareness::from_value(Some("invalid")),
-        PedestrianAwareness::Full
-    );
-    assert_eq!(
-        PedestrianAwareness::from_value(Some("crossings")),
-        PedestrianAwareness::CrossingsOnly
-    );
-    assert_eq!(
-        PedestrianAwareness::from_value(Some("ignore")),
-        PedestrianAwareness::Ignore
-    );
 }
 
 #[test]
